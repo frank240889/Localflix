@@ -4,5 +4,14 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- Shown in the Local Network permission prompt (server discovery, Phase 1) -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Localflix looks for Jellyfin servers on your home network.</string>
+	<!-- Home Jellyfin servers usually use plain http:// -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

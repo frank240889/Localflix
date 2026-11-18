@@ -79,8 +79,8 @@ fun LoginScreen(
         Button(
             onClick = {
                 isLoading = true
-                // In a real app, call JellyfinManager here
-                // For now, simulate success after a delay
+                // TODO(Phase 2): sign in through AuthRepository.login
+                // For now, go straight to the next screen
                 onLoginSuccess()
             },
             modifier = Modifier
