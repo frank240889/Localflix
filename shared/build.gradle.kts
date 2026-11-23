@@ -101,6 +101,8 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.multiplatformSettings.test)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.kotlinx.coroutinesTest)
         }
 
         // Paused targets (see allTargets above)

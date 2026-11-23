@@ -7,6 +7,8 @@ import com.darkyellowstudios.localflix.data.remote.dto.ItemsResult
 import com.darkyellowstudios.localflix.data.storage.SettingsStore
 import com.darkyellowstudios.localflix.model.JellyfinSession
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -54,14 +56,20 @@ class JellyfinApi internal constructor(
             "?MediaSourceId=$itemId&DeviceId=${store.deviceId}&api_key=${session.accessToken}"
 }
 
-/** HTTP client that sends Jellyfin's `MediaBrowser` auth header on every request. */
-internal fun createHttpClient(store: SettingsStore) = HttpClient {
-    install(ContentNegotiation) {
-        json(Json { ignoreUnknownKeys = true })
+/**
+ * HTTP client that sends Jellyfin's `MediaBrowser` auth header on every request.
+ * [engine] is null in the app (platform default engine); tests pass a `MockEngine`.
+ */
+internal fun createHttpClient(store: SettingsStore, engine: HttpClientEngine? = null): HttpClient {
+    val config: HttpClientConfig<*>.() -> Unit = {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+        defaultRequest {
+            header(HttpHeaders.Authorization, authHeader(store.deviceId, store.session()?.accessToken))
+        }
     }
-    defaultRequest {
-        header(HttpHeaders.Authorization, authHeader(store.deviceId, store.session()?.accessToken))
-    }
+    return if (engine == null) HttpClient(config) else HttpClient(engine, config)
 }
 
 internal fun authHeader(deviceId: String, token: String?): String {
