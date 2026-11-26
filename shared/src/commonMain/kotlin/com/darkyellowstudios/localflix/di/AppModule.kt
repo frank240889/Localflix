@@ -19,7 +19,7 @@ val appModule = module {
     single { createHttpClient(get()) }
     single { JellyfinApi(get(), get()) }
     single { AuthRepository(get(), get(), get()) }
-    single { LibraryRepository(get(), get(), get()) }
+    single { LibraryRepository(get(), get()) }
 }
 
 /**
