@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.darkyellowstudios.localflix.model.UserProfile
 import com.darkyellowstudios.localflix.ui.theme.IndustrialBlack
@@ -26,7 +27,8 @@ import com.darkyellowstudios.localflix.ui.theme.IndustrialYellow
 
 @Composable
 fun ProfileScreen(
-    onProfileSelected: (UserProfile) -> Unit
+    onProfileSelected: (UserProfile) -> Unit,
+    notice: String? = null,
 ) {
     val profiles = listOf(
         UserProfile("1", "Dad", ""),
@@ -47,8 +49,17 @@ fun ProfileScreen(
             text = "Who's Watching?",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 40.dp) // Section gap: 40px
+            modifier = Modifier.padding(bottom = if (notice == null) 40.dp else 12.dp) // Section gap: 40px
         )
+        if (notice != null) {
+            Text(
+                text = notice,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 28.dp),
+            )
+        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),

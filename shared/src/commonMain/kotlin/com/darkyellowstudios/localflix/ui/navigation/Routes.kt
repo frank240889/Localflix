@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 sealed interface Route {
     @Serializable data object Splash : Route
     @Serializable data object Login : Route
-    @Serializable data object Profiles : Route
+    /** [sessionExpired] shows a note that the server signed the user out. */
+    @Serializable data class Profiles(val sessionExpired: Boolean = false) : Route
     @Serializable data object Home : Route
     @Serializable data class Details(val movieId: String) : Route
 }
