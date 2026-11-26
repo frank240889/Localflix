@@ -4,6 +4,7 @@ import com.darkyellowstudios.localflix.ConnectivityMonitor
 import com.darkyellowstudios.localflix.data.remote.JellyfinApi
 import com.darkyellowstudios.localflix.data.remote.createHttpClient
 import com.darkyellowstudios.localflix.data.storage.SettingsStore
+import com.darkyellowstudios.localflix.model.JellyfinSession
 import com.russhwolf.settings.MapSettings
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -41,13 +42,18 @@ internal class FakeJellyfinServer {
 
     val api = JellyfinApi(createHttpClient(store, engine), store)
 
-    private fun MockRequestHandleScope.respondJson(body: String) =
-        respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()))
+    /** Saves [SESSION] directly, without a login request. */
+    fun signIn() = store.saveSession(SESSION)
 
     companion object {
+        val SESSION = JellyfinSession("http://jf.local:8096", "u1", "Franco", "tok123")
+        val JSON_HEADERS = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+
         const val AUTH_RESPONSE =
             """{"User":{"Id":"u1","Name":"Franco"},"AccessToken":"tok123","ServerId":"s1"}"""
         const val ITEMS_RESPONSE =
             """{"Items":[{"Id":"m1","Name":"Arrival","ProductionYear":2016,"Genres":["Drama"]}],"TotalRecordCount":1}"""
     }
 }
+
+internal fun MockRequestHandleScope.respondJson(body: String) = respond(body, HttpStatusCode.OK, FakeJellyfinServer.JSON_HEADERS)

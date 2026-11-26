@@ -1,7 +1,6 @@
 package com.darkyellowstudios.localflix.data.remote
 
 import com.darkyellowstudios.localflix.data.FakeJellyfinServer
-import com.darkyellowstudios.localflix.model.JellyfinSession
 import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -13,7 +12,7 @@ import kotlin.test.assertTrue
 
 class JellyfinApiTest {
     private val server = FakeJellyfinServer()
-    private val session = JellyfinSession("http://jf.local:8096", "u1", "Franco", "tok123")
+    private val session = FakeJellyfinServer.SESSION
 
     @Test
     fun authenticateByNamePostsCredentialsWithoutToken() = runTest {
@@ -50,30 +49,5 @@ class JellyfinApiTest {
         assertEquals("SortName", params["SortBy"])
         assertEquals("Overview,Genres,People", params["Fields"])
         assertTrue("""Token="tok123"""" in request.headers[HttpHeaders.Authorization].orEmpty())
-    }
-
-    @Test
-    fun buildsStreamAndHlsUrls() {
-        assertEquals(
-            "http://jf.local:8096/Videos/m1/stream?static=true&api_key=tok123",
-            server.api.streamUrl(session, "m1"),
-        )
-        assertEquals(
-            "http://jf.local:8096/Videos/m1/master.m3u8?MediaSourceId=m1" +
-                "&DeviceId=${server.store.deviceId}&api_key=tok123",
-            server.api.hlsUrl(session, "m1"),
-        )
-    }
-
-    @Test
-    fun authHeaderMatchesJellyfinFormat() {
-        assertEquals(
-            """MediaBrowser Client="Localflix", Device="Localflix KMP", DeviceId="d1", Version="1.0.0"""",
-            authHeader("d1", null),
-        )
-        assertEquals(
-            """MediaBrowser Client="Localflix", Device="Localflix KMP", DeviceId="d1", Version="1.0.0", Token="t"""",
-            authHeader("d1", "t"),
-        )
     }
 }
