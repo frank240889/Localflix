@@ -2,13 +2,7 @@ rootProject.name = "Localflix"
 
 pluginManagement {
     repositories {
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
@@ -16,13 +10,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        google {
-            mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
-            }
-        }
+        google()
         mavenCentral()
     }
 }
@@ -32,6 +20,12 @@ plugins {
 }
 
 include(":androidApp")
-include(":desktopApp")
 include(":shared")
-include(":webApp")
+
+// Desktop + web are paused while we focus on Android + iOS.
+// To re-enable: set localflix.allTargets=true in gradle.properties and re-sync.
+// (The shared module reads the same flag to turn its jvm/js/wasmJs targets back on.)
+if (providers.gradleProperty("localflix.allTargets").orNull == "true") {
+    include(":desktopApp")
+    include(":webApp")
+}
