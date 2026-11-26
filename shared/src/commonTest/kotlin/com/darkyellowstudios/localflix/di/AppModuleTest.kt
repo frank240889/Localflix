@@ -1,5 +1,6 @@
 package com.darkyellowstudios.localflix.di
 
+import com.darkyellowstudios.localflix.ConnectivityMonitor
 import com.darkyellowstudios.localflix.data.remote.JellyfinApi
 import com.darkyellowstudios.localflix.data.repo.AuthRepository
 import com.darkyellowstudios.localflix.data.repo.LibraryRepository
@@ -7,6 +8,7 @@ import com.darkyellowstudios.localflix.data.storage.SettingsStore
 import com.russhwolf.settings.MapSettings
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import kotlin.test.Test
@@ -18,8 +20,14 @@ class AppModuleTest {
     @Test
     fun everyDependencyResolves() {
         val app = koinApplication {
-            // Swap real on-device storage for an in-memory map; everything else is the real graph.
-            modules(appModule, module { single<Settings> { MapSettings() } })
+            // Swap on-device storage and the platform network monitor for test doubles.
+            modules(
+                appModule,
+                module {
+                    single<Settings> { MapSettings() }
+                    single { ConnectivityMonitor(MutableStateFlow(true)) }
+                },
+            )
         }
         try {
             val koin = app.koin

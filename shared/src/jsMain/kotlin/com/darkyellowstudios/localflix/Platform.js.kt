@@ -1,5 +1,9 @@
 package com.darkyellowstudios.localflix
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.core.module.Module
+import org.koin.dsl.module
+
 import web.navigator.navigator
 
 class JsPlatform: Platform {
@@ -12,3 +16,8 @@ class JsPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = JsPlatform()
+
+// Paused target: assume online until a real monitor is needed here.
+actual val platformModule: Module = module {
+    single { ConnectivityMonitor(MutableStateFlow(true)) }
+}

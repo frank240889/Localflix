@@ -11,6 +11,9 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -19,8 +22,10 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 
 /** Thin wrapper over the Jellyfin REST API. Works on every KMP target. */
@@ -62,6 +67,22 @@ class JellyfinApi internal constructor(
  */
 internal fun createHttpClient(store: SettingsStore, engine: HttpClientEngine? = null): HttpClient {
     val config: HttpClientConfig<*>.() -> Unit = {
+        expectSuccess = true // non-2xx responses throw, so repositories can map them to AppError
+        install(HttpTimeout) {
+            connectTimeoutMillis = 5_000
+            requestTimeoutMillis = 15_000
+        }
+        install(HttpRequestRetry) {
+            // Only GETs are safe to repeat; a failed login or progress report is not retried.
+            maxRetries = 2
+            retryIf { request, response -> request.method == HttpMethod.Get && response.status.value >= 500 }
+            // A timed-out request is not retried, so the user waits at most one timeout.
+            retryOnExceptionIf { request, cause ->
+                request.method == HttpMethod.Get &&
+                    cause !is CancellationException && cause !is HttpRequestTimeoutException
+            }
+            exponentialDelay(baseDelayMs = 300)
+        }
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
         }

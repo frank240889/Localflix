@@ -1,16 +1,20 @@
 package com.darkyellowstudios.localflix.data
 
+import com.darkyellowstudios.localflix.ConnectivityMonitor
 import com.darkyellowstudios.localflix.data.remote.JellyfinApi
 import com.darkyellowstudios.localflix.data.remote.createHttpClient
 import com.darkyellowstudios.localflix.data.storage.SettingsStore
 import com.russhwolf.settings.MapSettings
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.HttpRequestData
+import io.ktor.client.request.HttpResponseData
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * An in-memory Jellyfin server for tests. Records every request and answers the
@@ -19,9 +23,15 @@ import io.ktor.http.headersOf
 internal class FakeJellyfinServer {
     val requests = mutableListOf<HttpRequestData>()
     val store = SettingsStore(MapSettings())
+    val online = MutableStateFlow(true)
+    val connectivity = ConnectivityMonitor(online)
+
+    /** Set to answer (or throw) differently from the canned responses below. */
+    var handler: (MockRequestHandleScope.(HttpRequestData) -> HttpResponseData)? = null
 
     private val engine = MockEngine { request ->
         requests += request
+        handler?.let { return@MockEngine it(request) }
         when (request.url.encodedPath) {
             "/Users/AuthenticateByName" -> respondJson(AUTH_RESPONSE)
             "/Items" -> respondJson(ITEMS_RESPONSE)
@@ -31,7 +41,7 @@ internal class FakeJellyfinServer {
 
     val api = JellyfinApi(createHttpClient(store, engine), store)
 
-    private fun io.ktor.client.engine.mock.MockRequestHandleScope.respondJson(body: String) =
+    private fun MockRequestHandleScope.respondJson(body: String) =
         respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()))
 
     companion object {

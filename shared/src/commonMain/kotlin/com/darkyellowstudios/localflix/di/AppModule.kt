@@ -1,6 +1,8 @@
 package com.darkyellowstudios.localflix.di
 
+import com.darkyellowstudios.localflix.ConnectivityMonitor
 import com.darkyellowstudios.localflix.data.remote.JellyfinApi
+import com.darkyellowstudios.localflix.platformModule
 import com.darkyellowstudios.localflix.data.remote.createHttpClient
 import com.darkyellowstudios.localflix.data.repo.AuthRepository
 import com.darkyellowstudios.localflix.data.repo.LibraryRepository
@@ -16,8 +18,8 @@ val appModule = module {
     single { SettingsStore(get()) }
     single { createHttpClient(get()) }
     single { JellyfinApi(get(), get()) }
-    single { AuthRepository(get(), get()) }
-    single { LibraryRepository(get(), get()) }
+    single { AuthRepository(get(), get(), get()) }
+    single { LibraryRepository(get(), get(), get()) }
 }
 
 /**
@@ -28,7 +30,7 @@ fun initKoin(config: KoinAppDeclaration = {}) {
     if (KoinPlatform.getKoinOrNull() != null) return
     val koin = startKoin {
         config()
-        modules(appModule)
+        modules(appModule, platformModule)
     }.koin
-    println("Localflix deviceId=${koin.get<SettingsStore>().deviceId}")
+    println("Localflix deviceId=${koin.get<SettingsStore>().deviceId} online=${koin.get<ConnectivityMonitor>().isOnline.value}")
 }
