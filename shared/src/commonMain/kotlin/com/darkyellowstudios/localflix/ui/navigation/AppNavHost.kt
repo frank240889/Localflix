@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.darkyellowstudios.localflix.data.remote.ServerDiscovery
 import com.darkyellowstudios.localflix.data.repo.AuthRepository
 import com.darkyellowstudios.localflix.data.sample.SampleMovies
 import com.darkyellowstudios.localflix.model.AppError
@@ -33,9 +34,11 @@ fun AppNavHost() {
 
     NavHost(navController = navController, startDestination = Route.Splash) {
         composable<Route.Splash> {
-            // TODO(Phase 1): restore the saved server/session or start discovery
+            val discovery = koinInject<ServerDiscovery>()
             SplashScreen(
                 onReady = {
+                    // TODO(LF-14/LF-15): server picker and saved-server restore use this result
+                    println("Localflix discovered ${discovery.discover()}")
                     navController.navigate(Route.Login) {
                         popUpTo<Route.Splash> { inclusive = true }
                     }

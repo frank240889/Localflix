@@ -14,7 +14,7 @@ import com.darkyellowstudios.localflix.ui.theme.IndustrialObsidian
 import com.darkyellowstudios.localflix.ui.theme.IndustrialYellow
 
 @Composable
-fun SplashScreen(onReady: () -> Unit) {
+fun SplashScreen(onReady: suspend () -> Unit) {
     LaunchedEffect(Unit) { onReady() }
 
     Box(
