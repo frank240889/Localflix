@@ -1,7 +1,9 @@
 package com.darkyellowstudios.localflix.di
 
 import com.darkyellowstudios.localflix.ConnectivityMonitor
+import com.darkyellowstudios.localflix.MulticastLock
 import com.darkyellowstudios.localflix.data.remote.JellyfinApi
+import com.darkyellowstudios.localflix.data.remote.ServerDiscovery
 import com.darkyellowstudios.localflix.platformModule
 import com.darkyellowstudios.localflix.data.remote.createHttpClient
 import com.darkyellowstudios.localflix.data.repo.AuthRepository
@@ -20,6 +22,8 @@ val appModule = module {
     single { JellyfinApi(get(), get()) }
     single { AuthRepository(get(), get(), get()) }
     single { LibraryRepository(get(), get()) }
+    // Only Android binds a real MulticastLock (platformModule)
+    single { ServerDiscovery(getOrNull() ?: MulticastLock.None) }
 }
 
 /**

@@ -15,5 +15,15 @@ expect fun getPlatform(): Platform
  */
 class ConnectivityMonitor(val isOnline: StateFlow<Boolean>)
 
-/** Koin bindings that need platform code: currently the [ConnectivityMonitor]. */
+/**
+ * Holds the platform's multicast lock while discovery listens for replies. Android drops
+ * broadcast/multicast packets to save power unless one is held; elsewhere it does nothing.
+ */
+class MulticastLock(val acquire: () -> AutoCloseable) {
+    companion object {
+        val None = MulticastLock { AutoCloseable {} }
+    }
+}
+
+/** Koin bindings that need platform code: the [ConnectivityMonitor] and, on Android, the [MulticastLock]. */
 expect val platformModule: Module
